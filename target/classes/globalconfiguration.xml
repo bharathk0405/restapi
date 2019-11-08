@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:context="http://www.springframework.org/schema/context" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ws="http://www.mulesoft.org/schema/mule/ws"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd">
+
+  <http:listener-config name="restapi-httpListenerConfig" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration" />
+  <apikit:config name="restapi-config" raml="restapi.raml" consoleEnabled="false" doc:name="Router" />
+  
+  <http:request-config name="HTTP_Request_Configuration" host="${united.host}" port="${united.port}" doc:name="HTTP Request Configuration" />	
+  
+  
+  <ws:consumer-config name="Web_Service_Consumer" wsdlLocation="http://mu.mulesoft-training.com/essentials/delta?wsdl" service="TicketServiceService" port="TicketServicePort" serviceAddress="http://mu.mulesoft-training.com/essentials/delta" doc:name="Web Service Consumer"/>
+  
+  <context:property-placeholder location="restapi-${env}.properties,commonconfiguration.properties"/>
+  
+  
+  
+   <catch-exception-strategy  name="CatchExceptionStrategy">
+                <set-payload value="{
+&quot;code&quot;:500,
+&quot;message&quot;:&quot;unable to process your request due to target system is down&quot;
+
+}" doc:name="Set Payload"/>
+            </catch-exception-strategy>
+
+</mule>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+   
+  
+   
+    <flow name="deltaflightsbydestination-queryparamsFlow">
+        <logger level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+%namespace ns0 http://soap.training.mulesoft.com/
+---
+{
+	ns0#findFlight: {
+		destination: inboundProperties."http.query.params".destination
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <ws:consumer config-ref="Web_Service_Consumer" operation="findFlight" doc:name="Web Service Consumer"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="2124f97c-9174-487f-a4fb-a173fc3e21bb">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%namespace ns0 http://soap.training.mulesoft.com/
+---
+{
+	flights: payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
+		code: return.code,
+		price: return.price,
+		origin: return.origin,
+		destination: return.destination,
+		departureDate: return.departureDate,
+		airlineName: return.airlineName,
+		planeType: return.planeType
+	})
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="deltaFlightsByDestiantion response.......... #[payload]" level="INFO" doc:name="Logger"/>
+      <choice-exception-strategy doc:name="Choice Exception Strategy">
+            <catch-exception-strategy doc:name="Catch Exception Strategy" when="#[exception.causeMatches('com.mulesoft.weave.*')]">
+                <set-payload value="{
+&quot;code&quot;:500,
+&quot;message&quot;:&quot;exception while transforming the payload&quot;
+
+}" doc:name="Set Payload" mimeType="application/json"/>
+            </catch-exception-strategy>
+            <exception-strategy ref="CatchExceptionStrategy" doc:name="Reference Exception Strategy"/>
+           
+        </choice-exception-strategy> 
+    </flow>
+</mule>

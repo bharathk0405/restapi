@@ -1,0 +1,14 @@
+{
+                            "flights": [
+                                {
+                                    "code": "ER95jf",
+                                    "price": 234,
+                                    "origin": "MUA",
+                                    "destination": "PDF",
+                                    "departureDate": "2015/02/12",
+                                    "airlineName": "United",
+                                    "planeType": "Boeing 787",
+                                    "emptySeats": 23
+                                }
+                            ]
+                        }
